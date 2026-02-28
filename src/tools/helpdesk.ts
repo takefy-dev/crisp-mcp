@@ -157,7 +157,73 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
     }
   );
 
-  // 5. Delete helpdesk article
+  // 5. Publish helpdesk article
+  server.tool(
+    "publish_helpdesk_article",
+    "Publish a helpdesk article, making it visible to visitors. Articles are unpublished by default after creation.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the article (e.g. 'en', 'fr', 'de')"),
+      article_id: z
+        .string()
+        .describe("The unique identifier of the helpdesk article to publish"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.publishHelpdeskLocaleArticle(
+          wid,
+          params.locale,
+          params.article_id
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 6. Unpublish helpdesk article
+  server.tool(
+    "unpublish_helpdesk_article",
+    "Unpublish a helpdesk article, hiding it from visitors. The article remains in the helpdesk but is no longer publicly accessible.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the article (e.g. 'en', 'fr', 'de')"),
+      article_id: z
+        .string()
+        .describe("The unique identifier of the helpdesk article to unpublish"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.unpublishHelpdeskLocaleArticle(
+          wid,
+          params.locale,
+          params.article_id
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 7. Delete helpdesk article
   server.tool(
     "delete_helpdesk_article",
     "Permanently delete a helpdesk article by its article ID and locale. This action cannot be undone. The article will be removed from the helpdesk entirely.",
