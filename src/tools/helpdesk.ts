@@ -399,7 +399,80 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
     }
   );
 
-  // 10. List helpdesk sections
+  // 10. Update helpdesk category
+  server.tool(
+    "update_helpdesk_category",
+    "Update an existing helpdesk category's name or other properties.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the category (e.g. 'en', 'fr', 'de')"),
+      category_id: z
+        .string()
+        .describe("The unique identifier of the category to update"),
+      name: z
+        .string()
+        .optional()
+        .describe("New name for the category"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const categoryObject: Record<string, unknown> = {};
+        if (params.name !== undefined) categoryObject.name = params.name;
+        const result = await crisp.website.updateHelpdeskLocaleCategory(
+          wid,
+          params.locale,
+          params.category_id,
+          categoryObject
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 11. Delete helpdesk category
+  server.tool(
+    "delete_helpdesk_category",
+    "Permanently delete a helpdesk category. This will remove the category and may affect articles assigned to it.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the category (e.g. 'en', 'fr', 'de')"),
+      category_id: z
+        .string()
+        .describe("The unique identifier of the category to delete"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.deleteHelpdeskLocaleCategory(
+          wid,
+          params.locale,
+          params.category_id
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 12. List helpdesk sections
   server.tool(
     "list_helpdesk_sections",
     "List all sections within a specific helpdesk category for a given locale, paginated. Sections are sub-groupings within a category that further organize articles. Returns an array of section objects including section IDs and names.",
@@ -465,6 +538,87 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
           params.locale,
           params.category_id,
           params.name
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 15. Update helpdesk section
+  server.tool(
+    "update_helpdesk_section",
+    "Update an existing helpdesk section's name or other properties.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the section (e.g. 'en', 'fr', 'de')"),
+      category_id: z
+        .string()
+        .describe("The category ID containing the section"),
+      section_id: z
+        .string()
+        .describe("The unique identifier of the section to update"),
+      name: z
+        .string()
+        .optional()
+        .describe("New name for the section"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const sectionObject: Record<string, unknown> = {};
+        if (params.name !== undefined) sectionObject.name = params.name;
+        const result = await crisp.website.updateHelpdeskLocaleSection(
+          wid,
+          params.locale,
+          params.category_id,
+          params.section_id,
+          sectionObject
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 16. Delete helpdesk section
+  server.tool(
+    "delete_helpdesk_section",
+    "Permanently delete a helpdesk section from a category.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the section (e.g. 'en', 'fr', 'de')"),
+      category_id: z
+        .string()
+        .describe("The category ID containing the section"),
+      section_id: z
+        .string()
+        .describe("The unique identifier of the section to delete"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.deleteHelpdeskLocaleSection(
+          wid,
+          params.locale,
+          params.category_id,
+          params.section_id
         );
         return {
           content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
