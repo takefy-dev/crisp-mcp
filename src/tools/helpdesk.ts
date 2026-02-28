@@ -418,12 +418,17 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
         .string()
         .optional()
         .describe("New name for the category"),
+      description: z
+        .string()
+        .optional()
+        .describe("New description for the category"),
     },
     async (params) => {
       try {
         const wid = resolveWebsiteId(params.website_id);
         const categoryObject: Record<string, unknown> = {};
         if (params.name !== undefined) categoryObject.name = params.name;
+        if (params.description !== undefined) categoryObject.description = params.description;
         const result = await crisp.website.updateHelpdeskLocaleCategory(
           wid,
           params.locale,
