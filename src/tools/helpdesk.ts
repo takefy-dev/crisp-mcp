@@ -258,7 +258,77 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
     }
   );
 
-  // 8. List helpdesk sections
+  // 8. Get article category
+  server.tool(
+    "get_helpdesk_article_category",
+    "Get the category currently assigned to a helpdesk article. Returns the category object associated with the article in the specified locale.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the article (e.g. 'en', 'fr', 'de')"),
+      article_id: z
+        .string()
+        .describe("The unique identifier of the helpdesk article"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.resolveHelpdeskLocaleArticleCategory(
+          wid,
+          params.locale,
+          params.article_id
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 9. Assign article to category
+  server.tool(
+    "update_helpdesk_article_category",
+    "Assign or change the category of a helpdesk article. Use list_helpdesk_categories to find available category IDs, then use this tool to move an article into a specific category.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the article (e.g. 'en', 'fr', 'de')"),
+      article_id: z
+        .string()
+        .describe("The unique identifier of the helpdesk article to recategorize"),
+      category_id: z
+        .string()
+        .describe("The unique identifier of the category to assign the article to"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.updateHelpdeskLocaleArticleCategory(
+          wid,
+          params.locale,
+          params.article_id,
+          params.category_id
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 10. List helpdesk sections
   server.tool(
     "list_helpdesk_sections",
     "List all sections within a specific helpdesk category for a given locale, paginated. Sections are sub-groupings within a category that further organize articles. Returns an array of section objects including section IDs and names.",
