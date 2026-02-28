@@ -32,7 +32,14 @@ export function handleToolError(error: unknown): { content: { type: "text"; text
       isError: true,
     };
   }
-  const msg = error instanceof Error ? error.message : String(error);
+  let msg: string;
+  if (error instanceof Error) {
+    msg = error.message;
+  } else if (typeof error === "object" && error !== null) {
+    msg = JSON.stringify(error, null, 2);
+  } else {
+    msg = String(error);
+  }
   return {
     content: [{ type: "text", text: `Error: ${msg}` }],
     isError: true,
