@@ -291,10 +291,10 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
     }
   );
 
-  // 9. Assign article to category
+  // 9. Assign article to category (and optionally section)
   server.tool(
     "update_helpdesk_article_category",
-    "Assign or change the category of a helpdesk article. Use list_helpdesk_categories to find available category IDs, then use this tool to move an article into a specific category.",
+    "Assign or change the category and section of a helpdesk article. Use list_helpdesk_categories to find category IDs and list_helpdesk_sections to find section IDs. Both new and existing articles can be organized this way.",
     {
       website_id: z
         .string()
@@ -309,6 +309,10 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
       category_id: z
         .string()
         .describe("The unique identifier of the category to assign the article to"),
+      section_id: z
+        .string()
+        .optional()
+        .describe("The unique identifier of the section within the category to assign the article to"),
     },
     async (params) => {
       try {
@@ -317,7 +321,8 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
           wid,
           params.locale,
           params.article_id,
-          params.category_id
+          params.category_id,
+          params.section_id
         );
         return {
           content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
@@ -357,6 +362,43 @@ export function registerHelpdeskTools(server: McpServer, crisp: any) {
           params.locale,
           params.category_id,
           params.page
+        );
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (e) {
+        return handleToolError(e);
+      }
+    }
+  );
+
+  // 11. Create helpdesk section
+  server.tool(
+    "create_helpdesk_section",
+    "Create a new section within a helpdesk category. Sections are sub-groupings inside a category used to further organize articles. Returns the newly created section object with its section ID.",
+    {
+      website_id: z
+        .string()
+        .optional()
+        .describe("Website ID (uses default if not provided)"),
+      locale: z
+        .string()
+        .describe("Locale code for the new section (e.g. 'en', 'fr', 'de')"),
+      category_id: z
+        .string()
+        .describe("The category ID to create the section in"),
+      name: z
+        .string()
+        .describe("The name of the new section"),
+    },
+    async (params) => {
+      try {
+        const wid = resolveWebsiteId(params.website_id);
+        const result = await crisp.website.addHelpdeskLocaleSection(
+          wid,
+          params.locale,
+          params.category_id,
+          params.name
         );
         return {
           content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
